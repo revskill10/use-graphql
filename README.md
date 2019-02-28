@@ -8,7 +8,7 @@ Just copy and paste from this repository in the mean time
 
 ```js
 const [{
-  data, error, loading
+  json, error, loading
 }, {
   refetch, abort, setQuery, setTimeout, setVariables, setInit, setOperationName
 }] = useGraphql({

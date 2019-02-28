@@ -1,6 +1,10 @@
-# useGraphql
+# useGraphql React Hook
 
-API:
+## Installation
+
+Just copy and paste from this repository in the mean time
+
+## API:
 
 ```js
 const [{
@@ -16,7 +20,7 @@ I lied about zero-dependency ;)
 
 Actually you need to have `graphql`, `graphql-tag` and `reactn` in your `package.json`
 
-# Examples:
+## Examples:
 
 Pokemon
 

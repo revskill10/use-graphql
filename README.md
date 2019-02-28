@@ -8,7 +8,7 @@ const [{
 }, {
   refetch, abort, setTimeout, setVariables, setInit, setOperationName
 }] = useGraphql({
-  key, url, query, variables, operationName, init = fetchOptions, skip, timeout
+  key, url, query, variables, operationName, init, skip, timeout
 }, {onComplete, onError, onAborted})
 ```
 

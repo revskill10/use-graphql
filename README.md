@@ -10,7 +10,7 @@ Just copy and paste from this repository in the mean time
 const [{
   data, error, loading
 }, {
-  refetch, abort, setTimeout, setVariables, setInit, setOperationName
+  refetch, abort, setQuery, setTimeout, setVariables, setInit, setOperationName
 }] = useGraphql({
   key, url, query, variables, operationName, init, skip, timeout
 }, {onComplete, onError, onAborted})

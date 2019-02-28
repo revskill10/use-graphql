@@ -62,6 +62,7 @@ function useGraphql({
     const [cache] = useGlobal('cache')
     const setCache = useGlobal('setCache')
     const evictCache = useGlobal('evictCache')
+    const [q, setGqlQuery] = useState(gqlQuery)
     const [vr, setVariables] = useState(variables)
     const [int, setInit] = useState(init) 
     const [op, setOperationName] = useState(operationName)
@@ -106,10 +107,13 @@ function useGraphql({
       }
     }
 
-    
+    const setQuery = (q) => {
+      setGqlQuery(gql(q))
+    }
+
     const [{data, error}, {refetch,}] = useCache(key, miss, skip, {cache, setCache, evictCache})
 
-    return [{json:data, error, loading}, {refetch, abort, setTimeout, setVariables, setInit, setOperationName}]
+    return [{json:data, error, loading}, {refetch, abort, setQuery, setTimeout, setVariables, setInit, setOperationName}]
   }
 }
 

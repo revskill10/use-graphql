@@ -14,7 +14,7 @@ const [{
 
 I lied about zero-dependency ;)
 
-Actually you need to have `graphql`, `graphql-tag` in your `package.json`
+Actually you need to have `graphql`, `graphql-tag` and `reactn` in your `package.json`
 
 # Examples:
 

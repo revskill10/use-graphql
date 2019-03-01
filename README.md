@@ -4,6 +4,22 @@
 
 Under development
 
+## Why another graphql client ?
+
+- When i look at `graphiql`, i ask myself, how to build my own `GraphiQL` in a simple way. 
+Graphiql allows you to change `headers`, `variables`, `query`, multiple `operationName` is allowed, too.
+
+- So i want to use Hook for this task.
+What're problems with current approaches ?
+
+Most of `graphql clients` requires you to create a `client` before hand. It's fine unless you want to:
+
+- Having multiple queries inside the same components.
+- Having just one cache for multiple clients.
+
+Cache is the trickiest part here, especially if you want SSR with lazy components.
+
+
 ## Installation
 
 Just copy and paste from this repository in the mean time.
@@ -71,7 +87,7 @@ const Pokemon = () => {
     }
   }`
 
-  const [{json, error, loading},{refetch, setVariables}] = useGraphql({
+  const [{refetch, setVariables},{json, error, loading}] = useGraphql({
     key: "pokemon-pikachu", url, query, timeout: 4000
   }, { 
     onComplete: () => console.log(inspect(json)),

@@ -41,7 +41,7 @@ evictCache = (key) => {}
 
 You can use Redux or a normal global cache for this (I recommend `reactn` for this).
 
-For a production cache library, [js-cache](https://www.npmjs.com/package/js-cache) is an option.
+For a production cache library, [lru-cache](https://www.npmjs.com/package/lru-cache) is an option.
 
 ## API:
 

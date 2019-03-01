@@ -72,7 +72,7 @@ const [{
 )
 ```
 
-and returns a `Promise`, how to update the cache is up to you.
+How to update the cache is up to you with `{setCache, evictCache}`
 
 
 Actually you need to have `graphql`, `graphql-tag` and `reactn` in your `package.json`

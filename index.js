@@ -41,16 +41,16 @@ async function graphqlFetch({
     )
     //const response = await retryFetch(url, options);
     const json = await response.json();
-    return {data:json, error:null}
+    return {data:json, error:null, response}
   } catch(error) {
-    return {data:null, error}
+    return {data:null, error, response}
   }
 }
 
 
 function useGraphql({
   key, url, query, variables = {}, operationName = null, init = fetchOptions, skip = false, timeout = 200
-}, {onComplete, onError, onAborted}) {
+}, options = {onComplete: null, onError: null, onAborted: null}) {
   const gqlQuery = gql(query)
   const [cache] = useGlobal('cache')
   const setCache = useGlobal('setCache')
@@ -70,26 +70,25 @@ function useGraphql({
       signal = controller.signal
       signal.addEventListener("abort", () => {
         console.log("aborted!")
-        if (onAborted) {
-          onAborted()
+        if (options.onAborted) {
+          options.onAborted()
         }
       })
       setController(controller)
       setSignal(signal)
     }
-    if (data && typeof(onComplete) === 'function') {
-      onComplete()
+    if (data && typeof(options.onComplete) === 'function') {
+      options.onComplete()
     }
-    if (error && typeof(onError) === 'function') {
-      onError()
+    if (error && typeof(options.onError) === 'function') {
+      options.onError()
     }
     console.log('mount')
   }, [data])
   console.log('render')
-
-  const miss = async ({url = url, variables = vr, init = {...int, signal}, operationName=op, timeout=to }) => { 
+  const miss = async () => { 
     setLoading(true)
-    const val = await graphqlFetch({url, init, query:q, variables, operationName}, {timeout})
+    const val = await graphqlFetch({url, init: {...int, signal}, query:q, variables:vr, operationName:op}, {timeout:to})
     setLoading(false)
     return val
   }
@@ -104,13 +103,14 @@ function useGraphql({
     setGqlQuery(gql(newQuery))
   }
 
-  const queryAction = useCallback(async (params) => {
-    return miss(params)
-  })
+  const mutate = async (cb, args = {url, init: {...int, signal}, query:q, variables:vr, operationName:op} , options = {timeout:to}) => {
+    const d = await graphqlFetch(args, options)
+    cb(d, {cache, setCache, evictCache})
+  }
 
-  const [{data, error}, {refetch}] = useCache(key, miss, skip, {cache, setCache, evictCache})
+  const [{data, error, response}, {refetch}] = useCache(key, miss, skip, {cache, setCache, evictCache})
 
-  return [{refetch, abort, query:queryAction, setLoading, setQuery, setTimeout, setVariables, setInit, setOperationName}, {json:data, error, loading},]
+  return [{refetch, abort, query:mutate, setLoading, setQuery, setTimeout, setVariables, setInit, setOperationName}, {json:data, error, loading, response},]
 }
 
 export default useGraphql

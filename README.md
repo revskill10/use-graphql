@@ -61,9 +61,15 @@ const [{
 - query will have arguments 
 
 ```js
-{
-  query, variables, operationName, init, skip, timeout
-}
+( 
+  callback(queryResult),
+  {
+    query, variables, operationName, init, skip, timeout
+  },
+  {
+    timeout
+  }
+)
 ```
 
 and returns a `Promise`, how to update the cache is up to you.
@@ -73,7 +79,7 @@ Actually you need to have `graphql`, `graphql-tag` and `reactn` in your `package
 
 ## Examples:
 
-Pokemon
+Pokemon Query
 
 ```js
 import useGraphql from 'use-graphql'
@@ -110,3 +116,68 @@ const Pokemon = () => {
     </Fragment>
   )
 }
+```
+
+Mutation:
+
+```js
+import useGraphql from 'use-graphql'
+
+const Example = () => {
+  const url = "/graphql"
+  const insert_user = `
+  mutation {
+    insert_user(objects:[{
+      email: "test1234fdsssdsddsd",
+    }]){
+      affected_rows
+      returning{
+        email
+      }
+    }
+  }
+  `
+
+  const [{query}] = useGraphql({
+    url, query: insert_user, timeout: 2000, skip:true
+  })
+
+  const user = {
+    email: "dung@gmail.com",
+    social: {
+      facebook: "dung1",
+      twitter: "dung2"
+    }
+  }
+
+  return (
+    <Formik
+      initialValues={user}
+      onSubmit={(values, actions) => {
+        query((v, {setCache}) => {
+          actions.setSubmitting(true);
+          console.log(inspect(v.data.errors))
+          setCache('test', v.data)
+          actions.setSubmitting(false);
+        }, { variables: values })
+      }}
+      render={({ errors, status, touched, isSubmitting }) => (
+        <Form>
+          <Field type="email" name="email" />
+          <ErrorMessage name="email" component="div" />  
+          <Field type="text" className="error" name="social.facebook" />
+          <ErrorMessage name="social.facebook">
+            {errorMessage => <div className="error">{errorMessage}</div>}
+          </ErrorMessage>
+          <Field type="text" name="social.twitter" />
+          <ErrorMessage name="social.twitter" className="error" component="div"/>  
+          {status && status.msg && <div>{status.msg}</div>}
+          <button type="submit" disabled={isSubmitting}>
+            Submit
+          </button>
+        </Form>
+      )}
+    />
+  )
+}
+```

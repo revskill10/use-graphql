@@ -1,6 +1,6 @@
 import { useGlobal } from 'reactn';
 import useCache from './useCache';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import gql from 'graphql-tag'
 import {print} from 'graphql/language/printer'
 function delay(t, v) {
@@ -104,9 +104,13 @@ function useGraphql({
     setGqlQuery(gql(newQuery))
   }
 
+  const queryAction = useCallback(async (params) => {
+    return miss(params)
+  })
+
   const [{data, error}, {refetch}] = useCache(key, miss, skip, {cache, setCache, evictCache})
 
-  return [{refetch, abort, query:miss, setQuery, setTimeout, setVariables, setInit, setOperationName}, {json:data, error, loading},]
+  return [{refetch, abort, query:queryAction, setLoading, setQuery, setTimeout, setVariables, setInit, setOperationName}, {json:data, error, loading},]
 }
 
 export default useGraphql

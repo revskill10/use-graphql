@@ -8,13 +8,8 @@ function delay(t, v) {
     setTimeout(resolve.bind(null, v), t)
   });
 }
-const isQuery = (query) => {
-  try {
-    const q = query.definitions[0].operationName
-    return q === 'query' || q === 'mutation'
-  } catch (e) {
-    throw e
-  }
+const queryType = (query) => {
+  return query.definitions[0].operationName
 }
 const isServer = typeof(window) === 'undefined'
 const fetchOptions = {
@@ -57,64 +52,61 @@ function useGraphql({
   key, url, query, variables = {}, operationName = null, init = fetchOptions, skip = false, timeout = 200
 }, {onComplete, onError, onAborted}) {
   const gqlQuery = gql(query)
-
-  if (isQuery) {
-    const [cache] = useGlobal('cache')
-    const setCache = useGlobal('setCache')
-    const evictCache = useGlobal('evictCache')
-    const [q, setGqlQuery] = useState(gqlQuery)
-    const [vr, setVariables] = useState(variables)
-    const [int, setInit] = useState(init) 
-    const [op, setOperationName] = useState(operationName)
-    let [controller, setController] = useState(null)
-    let [signal, setSignal] = useState(null)
-    const [loading, setLoading] = useState(false)
-    const [to, setTimeout] = useState(timeout)
-    
-    useEffect(() => {
-      if (!controller) {
-        controller = new AbortController()
-        signal = controller.signal
-        signal.addEventListener("abort", () => {
-          console.log("aborted!")
-          if (onAborted) {
-            onAborted()
-          }
-        })
-        setController(controller)
-        setSignal(signal)
-      }
-      if (data && typeof(onComplete) === 'function') {
-        onComplete()
-      }
-      if (error && typeof(onError) === 'function') {
-        onError()
-      }
-      console.log('mount')
-    }, [data])
-    console.log('render')
-
-    const miss = async () => { 
-      setLoading(true)
-      const val = await graphqlFetch({url, init: {...int, signal}, query:q, variables:vr, operationName:op}, {timeout:to})
-      setLoading(false)
-      return val
+  const [cache] = useGlobal('cache')
+  const setCache = useGlobal('setCache')
+  const evictCache = useGlobal('evictCache')
+  const [q, setGqlQuery] = useState(gqlQuery)
+  const [vr, setVariables] = useState(variables)
+  const [int, setInit] = useState(init) 
+  const [op, setOperationName] = useState(operationName)
+  let [controller, setController] = useState(null)
+  let [signal, setSignal] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [to, setTimeout] = useState(timeout)
+  
+  useEffect(() => {
+    if (!controller) {
+      controller = new AbortController()
+      signal = controller.signal
+      signal.addEventListener("abort", () => {
+        console.log("aborted!")
+        if (onAborted) {
+          onAborted()
+        }
+      })
+      setController(controller)
+      setSignal(signal)
     }
-
-    const abort = () => {
-      if (controller) {
-        controller.abort()
-      }
+    if (data && typeof(onComplete) === 'function') {
+      onComplete()
     }
-
-    const setQuery = (newQuery) => {
-      setGqlQuery(gql(newQuery))
+    if (error && typeof(onError) === 'function') {
+      onError()
     }
+    console.log('mount')
+  }, [data])
+  console.log('render')
 
-    const [{data, error}, {refetch,}] = useCache(key, miss, skip, {cache, setCache, evictCache})
-
-    return [{json:data, error, loading}, {refetch, abort, setQuery, setTimeout, setVariables, setInit, setOperationName}]
+  const miss = async ({url = url, variables = vr, init = {...int, signal}, operationName=op, timeout=to }) => { 
+    setLoading(true)
+    const val = await graphqlFetch({url, init, query:q, variables, operationName}, {timeout})
+    setLoading(false)
+    return val
   }
+
+  const abort = () => {
+    if (controller) {
+      controller.abort()
+    }
+  }
+
+  const setQuery = (newQuery) => {
+    setGqlQuery(gql(newQuery))
+  }
+
+  const [{data, error}, {refetch}] = useCache(key, miss, skip, {cache, setCache, evictCache})
+
+  return [{refetch, abort, query:miss, setQuery, setTimeout, setVariables, setInit, setOperationName}, {json:data, error, loading},]
 }
 
 export default useGraphql

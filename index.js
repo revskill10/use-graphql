@@ -96,7 +96,7 @@ function useGraphql({
 
     const miss = async () => { 
       setLoading(true)
-      const val = await graphqlFetch({url, init: {...int, signal}, query:gqlQuery, variables:vr, operationName:op}, {timeout:to})
+      const val = await graphqlFetch({url, init: {...int, signal}, query:q, variables:vr, operationName:op}, {timeout:to})
       setLoading(false)
       return val
     }
@@ -107,8 +107,8 @@ function useGraphql({
       }
     }
 
-    const setQuery = (q) => {
-      setGqlQuery(gql(q))
+    const setQuery = (newQuery) => {
+      setGqlQuery(gql(newQuery))
     }
 
     const [{data, error}, {refetch,}] = useCache(key, miss, skip, {cache, setCache, evictCache})

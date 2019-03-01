@@ -62,7 +62,7 @@ const [{
 
 ```js
 ( 
-  callback(queryResult),
+  callback(queryResult, {cache, setCache, evictCache}),
   {
     query, variables, operationName, init, skip, timeout
   },

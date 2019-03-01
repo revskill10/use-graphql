@@ -26,6 +26,7 @@ Just copy and paste from this repository in the mean time.
 
 You'll need a global cache for SSR to hydrate on client.
 
+
 The cache needs to have three action
 
 ```js
@@ -39,6 +40,8 @@ evictCache = (key) => {}
 ```
 
 You can use Redux or a normal global cache for this (I recommend `reactn` for this).
+
+For a production cache library, [js-cache](https://www.npmjs.com/package/js-cache) is an option.
 
 ## API:
 

@@ -1,4 +1,6 @@
-import useAsync from './useAsync'
+import useAsync from 'hooks/useAsync'
+import useSubscription from 'hooks/useSubscription'
+import { useCallback } from 'react';
 
 const fetchOptions = {
   method: 'post',
@@ -22,10 +24,9 @@ async function asyncFetch({
     }
   )
 }
-
 function useGraphQLFetch({
-  key, url, query, fetch: generic, mutation, variables = {}, operationName = null, init = fetchOptions, skip = false
-}) {
+  key, url, query, fetch: generic, mutation, subscription, variables = {}, operationName = null, init = fetchOptions, skip = false
+}, cb) {
   if (generic) {
     return useAsync(key, generic, skip)
   }
@@ -34,16 +35,33 @@ function useGraphQLFetch({
       return await asyncFetch({url, init, query, variables, operationName,})
     }, skip)
 
-    return [{json:data, error}, {refetch}]
+    const callback =  useCallback(async ({variables = variables}) => {
+      const json = await asyncFetch({url, init, query, variables, operationName,})
+      const res = await json.json()
+      return res
+    })
+
+    return [{json:data, error}, {refetch, fetch:callback}]
   } else if (mutation) {
     
-    const callback = async ({variables}) => {
+    const callback = useCallback(async ({variables}) => {
       const json = await asyncFetch({url, init, query:mutation, variables, operationName,})
       const res = await json.json()
       return res
-    }
+    })
     
     return callback
+  } else if (subscription) {
+    const onData = (data) => cb(data, null)
+    const onError = (error) => cb(null, error)
+    return useSubscription({
+      uri: url, 
+      headers: init.headers, 
+      query: subscription, 
+      onData,
+      onError, 
+      variables,
+    })
   }
 }
 

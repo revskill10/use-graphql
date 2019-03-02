@@ -63,9 +63,8 @@ delete(window, '__PRELOADED_STATE__')
 If `query`:
 
 ```js
-const [{json, error},{
-  refetch
-}] = useGraphql({
+const [{ json, error } , { refetch, fetch }]
+= useGraphql({
   key, url, query, variables, operationName, init, skip
 })
 ```
@@ -90,94 +89,56 @@ Actually you need to have `graphql`, `graphql-tag` and `reactn` in your `package
 
 ## Examples:
 
-Pokemon Query
+1. Refetching after a mutation
 
 ```js
-import useGraphql from 'use-graphql'
-const url = 'https://graphql-pokemon.now.sh'
-const query = `{
-  pokemon(name: "Pikachu") {
-    name
-    image
-  }
-}`
-
-const Pokemon = () => {
-  const [{json, error}, {refetch}] = useGraphql({
-    key: "pokemon-pikachu", url, query
+const Example = () => {
+  const [{json},{refetch}] = useGraphql({
+    key: "all-temp1", url, query: allTemp1
+  })
+  const mutate = useGraphql({
+    url, mutation: insert_temp1, skip: true
   })
 
+  const temp1 = {
+    hoten: "",
+    code: ""
+  }
+
   return (
-    <Fragment>
+    <div>
+      <h1>All temp1</h1>
       <Button onClick={refetch}>Refetch</Button>
       <If condition={json && json.data}>
-        <SimpleImg height={200} src={data.pokemon.image} alt={data.pokemon.name} />
+        <ul>
+          <For each="item" index="index" of={ json.data.temp1 }>
+            <li key={ item.id }>{item.hoten} - {item.code}</li>
+          </For>
+        </ul>
       </If>
-      <If condition={error}>
-        <div>{JSON.stringify(error)}</div>
-      </If>
-    </Fragment>
-  )
-}
-```
-
-Mutation:
-
-```js
-import useGraphql from 'use-graphql'
-const url = "/graphql"
-const insert_user = `
-mutation {
-  insert_user(objects:[{
-    email: "test1234fdsssdsddsd",
-  }]){
-    affected_rows
-    returning{
-      email
-    }
-  }
-}
-`
-const Example = () => {
-  const mutate = useGraphql({
-    url, mutation: insert_user
-  })
-
-  const user = {
-    email: "dung@gmail.com",
-    social: {
-      facebook: "dung1",
-      twitter: "dung2"
-    }
-  }
-
-  return (
     <Formik
-      initialValues={user}
+      initialValues={temp1}
       onSubmit={async (values, actions) => {
-        console.log(inspect(values))
         const res = await mutate({variables: {input: [values]}})
-        console.log(res)
         actions.setSubmitting(false);        
         refetch()
       }}
       render={({ errors, status, touched, isSubmitting }) => (
-        <Form>
-          <Field type="email" name="email" />
-          <ErrorMessage name="email" component="div" />  
-          <Field type="text" className="error" name="social.facebook" />
-          <ErrorMessage name="social.facebook">
-            {errorMessage => <div className="error">{errorMessage}</div>}
-          </ErrorMessage>
-          <Field type="text" name="social.twitter" />
-          <ErrorMessage name="social.twitter" className="error" component="div"/>  
-          {status && status.msg && <div>{status.msg}</div>}
-          <button type="submit" disabled={isSubmitting}>
-            Submit
-          </button>
-        </Form>
+        <div>
+          <Child />
+          <Form>
+            <Field type="text" name="hoten" />
+            <ErrorMessage name="email" component="div" />  
+            <Field type="text" name="code" />
+            <ErrorMessage name="code" component="div" />  
+            <button type="submit" disabled={isSubmitting}>
+              Submit
+            </button>
+          </Form>        
+        </div>
       )}
     />
+    </div>
   )
 }
 ```

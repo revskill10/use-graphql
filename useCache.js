@@ -10,7 +10,8 @@ function useCache(key, miss, skip, {cache, setCache, evictCache}) {
 
   async function fetchData() {
     try {
-      value = await readCache(cache, key, miss, setCache, false);
+      // refetch, which fetches from cache first
+      value = await readCache(cache, key, miss, setCache, true);
       setValue(value);
       setPrevKey(key);           
     } catch (e) {
@@ -20,7 +21,7 @@ function useCache(key, miss, skip, {cache, setCache, evictCache}) {
     }            
   }
 
-  const refetch = useCallback(fetchData)
+  //const refetch = useCallback(fetchData)
   
   if ((key !== prevKey) && !sk && isServer) {
     // When the key changes, we need to update the locally cached value. Read
@@ -33,13 +34,13 @@ function useCache(key, miss, skip, {cache, setCache, evictCache}) {
 
   useEffect(() => {
     fetchData()
-    evictCache(key);
+    //evictCache(key);
     setSk(false)
   }, [cache, key])
 
   // Once this value successfully commits, immediately evict it from the cache.
 
-  return [value, {refetch}];
+  return [value, {refetch:fetchData}];
 }
 
 /*
@@ -49,3 +50,4 @@ function evictCache(cache, key) {
 */
 
 export default useCache
+

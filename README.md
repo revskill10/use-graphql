@@ -80,7 +80,7 @@ If `mutation`:
 
 ```js
 const mutate = useGraphql({
-  key, url, mutation, variables, operationName, init, skip
+  key, url, mutation, variables, operationName, init
 })
 ```
 
@@ -140,7 +140,7 @@ mutation {
 `
 const Example = () => {
   const mutate = useGraphql({
-    url, mutate: insert_user
+    url, mutation: insert_user
   })
 
   const user = {

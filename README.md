@@ -60,14 +60,14 @@ delete(window, '__PRELOADED_STATE__')
 
 ## API:
 
+If `query`:
+
 ```js
-const [{
-  refetch, abort, query, setQuery, setTimeout, setVariables, setInit, setOperationName
-},{
-  json, error, loading
+const [{json, error},{
+  refetch
 }] = useGraphql({
-  key, url, query, variables, operationName, init, skip, timeout
-}, {onComplete, onError, onAborted})
+  key, url, query, variables, operationName, init, skip
+})
 ```
 
 ### Note
@@ -76,22 +76,15 @@ const [{
   key, url, query, variables, operationName, init, skip, timeout
 }` and has no additional option, it'll automatically update the cache with `key`
 
-- query will have arguments 
+If `mutation`:
 
 ```js
-( 
-  callback(queryResult, {cache, setCache, evictCache}),
-  {
-    query, variables, operationName, init, skip, timeout
-  },
-  {
-    timeout
-  }
-)
+const mutate = useGraphql({
+  key, url, mutation, variables, operationName, init, skip
+})
 ```
 
 How to update the cache is up to you with `{setCache, evictCache}`
-
 
 Actually you need to have `graphql`, `graphql-tag` and `reactn` in your `package.json`
 
@@ -101,32 +94,24 @@ Pokemon Query
 
 ```js
 import useGraphql from 'use-graphql'
+const url = 'https://graphql-pokemon.now.sh'
+const query = `{
+  pokemon(name: "Pikachu") {
+    name
+    image
+  }
+}`
 
 const Pokemon = () => {
-  const url = 'https://graphql-pokemon.now.sh'
-  const query = `{
-    pokemon(name: "Pikachu") {
-      name
-      image
-    }
-  }`
-
-  const [{refetch, setVariables},{json, error, loading}] = useGraphql({
-    key: "pokemon-pikachu", url, query, timeout: 4000
-  }, { 
-    onComplete: () => console.log(inspect(json)),
-    onError: () => {console.log(inspect(error))}
+  const [{json, error}, {refetch}] = useGraphql({
+    key: "pokemon-pikachu", url, query
   })
 
   return (
     <Fragment>
       <Button onClick={refetch}>Refetch</Button>
-      <Button onClick={() => setVariables({a: 1})}>Variables</Button>
-      <If condition={json}>
-        <With data={json.data}>
-          <If condition={loading}>Loading</If>
-          <SimpleImg height={200} src={data.pokemon.image} alt={data.pokemon.name} />
-        </With>
+      <If condition={json && json.data}>
+        <SimpleImg height={200} src={data.pokemon.image} alt={data.pokemon.name} />
       </If>
       <If condition={error}>
         <div>{JSON.stringify(error)}</div>
@@ -140,24 +125,22 @@ Mutation:
 
 ```js
 import useGraphql from 'use-graphql'
-
-const Example = () => {
-  const url = "/graphql"
-  const insert_user = `
-  mutation {
-    insert_user(objects:[{
-      email: "test1234fdsssdsddsd",
-    }]){
-      affected_rows
-      returning{
-        email
-      }
+const url = "/graphql"
+const insert_user = `
+mutation {
+  insert_user(objects:[{
+    email: "test1234fdsssdsddsd",
+  }]){
+    affected_rows
+    returning{
+      email
     }
   }
-  `
-
-  const [{query}] = useGraphql({
-    url, query: insert_user, timeout: 2000, skip:true
+}
+`
+const Example = () => {
+  const mutate = useGraphql({
+    url, mutate: insert_user
   })
 
   const user = {
@@ -171,13 +154,12 @@ const Example = () => {
   return (
     <Formik
       initialValues={user}
-      onSubmit={(values, actions) => {
-        query((v, {setCache}) => {
-          actions.setSubmitting(true);
-          console.log(inspect(v.data.errors))
-          setCache('test', v.data)
-          actions.setSubmitting(false);
-        }, { variables: values })
+      onSubmit={async (values, actions) => {
+        console.log(inspect(values))
+        const res = await mutate({variables: {input: [values]}})
+        console.log(res)
+        actions.setSubmitting(false);        
+        refetch()
       }}
       render={({ errors, status, touched, isSubmitting }) => (
         <Form>

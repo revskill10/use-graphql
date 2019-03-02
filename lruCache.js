@@ -1,5 +1,5 @@
-import { setGlobal, getGlobal, addReducer, resetGlobal } from 'reactn';
-import {LRUMap} from 'lru_map'
+const { setGlobal, getGlobal, addReducer, resetGlobal } = require('reactn');
+const LRU = require('lru_map').LRUMap
 
 const setupGlobal = ({cache}) => {
   resetGlobal()
@@ -22,8 +22,8 @@ const setupGlobal = ({cache}) => {
   );
 }
 
-export const setupGlobalCache = () => {
-  let cache = new LRUMap(4);
+export const setupGlobalCache = (limit = 3) => {
+  let cache = new LRU(limit);
 
   setupGlobal({cache})
 }
@@ -35,14 +35,8 @@ export const getGlobalCache = () => {
   }
 }
 
-export const loadGlobalCache = (serialized) => {
-  let serialized_cache = serialized.cache.map(it => {
-    return [it.key, it.value]
-  })
-  let cache = new LRUMap(serialized_cache)
-
-  //let cache = new LRUMap();
-  //cache.assign(serialized.cache)
-  //console.log(inspect(cache))
+export const loadGlobalCache = (serialized, limit = 3) => {
+  let cache = new LRU(serialized.cache)
+  //cache.fromJSON(serialized.cache)
   setupGlobal({cache})
 }
